@@ -5,8 +5,8 @@ from ortools.sat.python import cp_model
 
 from utils import float2hour
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("dam-logger")
 
 def pair_students(df_students, df_tutors, w_paired=1):
 

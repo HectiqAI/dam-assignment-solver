@@ -2,17 +2,40 @@ import pandas as pd
 import names
 import numpy as np
 
-def load_tutors_from_excel(filename):
+def load_tutors_from_excel(filename, sheet="Feuil1", header=0):
     xl_file = pd.ExcelFile(filename)
-    df_tutors_raw = {sheet_name: xl_file.parse(sheet_name) 
-          for sheet_name in xl_file.sheet_names}["Feuil1"]
+    df_tutors_raw = {sheet_name: xl_file.parse(sheet_name, header=header) 
+          for sheet_name in xl_file.sheet_names}[sheet]
     return df_tutors_raw
 
-def load_students_from_excel(filename):
+def load_students_from_excel(filename, sheet="Feuil1", header=2):
     xl_file = pd.ExcelFile(filename)
-    df_students = {sheet_name: xl_file.parse(sheet_name, header=2) 
-          for sheet_name in xl_file.sheet_names}['Inscription option 2']
+    df_students = {sheet_name: xl_file.parse(sheet_name, header=header) 
+          for sheet_name in xl_file.sheet_names}[sheet]
     return df_students
+
+def get_names(solution):
+    paired_students = np.unique([s[0] for s in solution.accepted_shifts])
+    paired_tutors = np.unique([s[1] for s in solution.accepted_shifts])
+    students_names = [solution.df_students.loc[i].nom for i in paired_students]
+    tutors_names = [solution.df_tutors.loc[i].nom for i in paired_tutors]
+    return students_names, tutors_names
+
+def get_not_in_list(df, selected_names):
+    return df[~df.nom.isin(selected_names)]
+
+def update(solution, df_students, df_tutors, next_sheet, tutor_file_name):
+    students_names, tutors_names = get_names(solution)
+
+    df_students = get_not_in_list(df_students, students_names)
+    df_tutors = get_not_in_list(df_tutors, tutors_names)
+    
+    df_tutors_raw2 = load_tutors_from_excel(tutor_file_name, sheet=next_sheet)
+    df_tutors2 = clean_tutors_df(df_tutors_raw2)
+    df_tutors2 = sanitize_tutors_df(df_tutors2)
+
+    df_tutors = pd.concat([df_tutors, df_tutors2], ignore_index=True)
+    return df_students, df_tutors2
 
 def hour2float(hour):
     try:
@@ -76,9 +99,10 @@ def clean_tutors_df(df):
                "Physique",
                "Autre matière"]
     for column in columns:
-        df[column] = df[column].replace("PasDuTout", value=0)
-        df[column] = df[column].replace("Partiellement", value=1)
-        df[column] = df[column].replace("Tres", value=2)
+        if column in df:
+            df[column] = df[column].replace("PasDuTout", value=0)
+            df[column] = df[column].replace("Partiellement", value=1)
+            df[column] = df[column].replace("Tres", value=2)
     
     # Schools
     columns = ["Vanier",
