@@ -22,7 +22,7 @@ And we maximize:
 - Assign most tutors to their preferred schools.
 - Pair the students most needed subjects with the tutors preferred subjects.
 
-To learn more about this project, read our [blog post](https://blog.hectiq.ai/posts/dampost).
+To learn more about this project, read our [blog post](https://www.hectiq.ai/en/blog/posts/dam).
 
 ## Usage
 
